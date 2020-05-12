@@ -1,8 +1,9 @@
 use snafu::Snafu;
 
-// Modules to clash with likely candidates from the standard library.
+// Likely candidates to clash with generated code
 mod core {}
 mod std {}
+mod snafu {}
 
 #[derive(Debug, Snafu)]
 enum VariantNamedNone {

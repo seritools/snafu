@@ -178,7 +178,7 @@ mod no_std_error;
 pub use no_std_error::Error;
 
 /// Ensure a condition is true. If it is not, return from the function
-/// with an error.
+/// with an `Err`.
 ///
 /// ```rust
 /// use snafu::{ensure, Snafu};
@@ -209,7 +209,7 @@ macro_rules! ensure {
 /// This can be used with the provided [`Whatever`][] type or with a
 /// custom error type that uses `snafu(whatever)`.
 ///
-/// # Without an underlying error
+/// # Without an underlying error (leaf error) (just to get that naming in ppls heads :^)
 ///
 /// Provide a format string and any optional arguments. The macro will
 /// unconditionally exit the calling function with an error.
@@ -237,11 +237,10 @@ macro_rules! ensure {
 /// # With an underlying error
 ///
 /// Provide a `Result` as the first argument, followed by a format
-/// string and any optional arguments. If the `Result` is an error,
-/// the formatted string will be appended to the error and the macro
-/// will exist the calling function with an error. If the `Result` is
-/// not an error, the macro will evaluate to the `Ok` value of the
-/// `Result`.
+/// string and any optional arguments. If the `Result` is an `Err`,
+/// the macro will wrap it into a snafu error (with the formatted string
+/// as the error message) and exit the calling function returning that.
+/// If the `Result` is an `Ok`, the macro will evaluate to its value (unwrapping).
 ///
 /// ```rust
 /// use snafu::{Snafu, whatever};
@@ -264,6 +263,12 @@ macro_rules! ensure {
 /// fn calculate_angle_of_refraction() -> Result<u8> {
 ///     whatever!("The programmer forgot to implement this...");
 /// }
+///
+/// // something like that to show what output to expect without having to run
+/// // it yourself, similar to how stdlib shows it
+/// assert_eq!(
+///     calculate_brightness_factor().err().unwrap().to_string(),
+///     "Error was: There was no angle");
 /// ```
 #[macro_export]
 #[cfg(any(feature = "std", test))]
@@ -815,6 +820,9 @@ impl GenerateBacktrace for Backtrace {
 #[snafu(display("{}", message))]
 /// A basic error type that you can use as a first step to better
 /// error handling.
+///
+/// Note also that this is still ＢＡＤＴＨＩＮＧ for many use-cases
+/// and see [this](guide-explaining-it) as to why.
 ///
 /// You can use this type in your own application as a quick way to
 /// create errors or add basic context to another error. This can also
